@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SpiderX Client Onboarding</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Inter+Tight:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a single focused card that walks the client through 7 short steps, progress rail on top, review screen at the end */
+:root{
+  --bg:#0A0606; --card:#140C0D; --line:#2C1C1E; --fg:#F6EEEC; --muted:#AD9894; --red:#E63329; --red2:#FF6B5E; --field:#1C1213;
+  --display:'Unbounded', Verdana, sans-serif; --body:'Inter Tight', Arial, sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;margin:0;min-height:100%;
+  background-image:radial-gradient(80% 60% at 100% -10%, rgba(230,51,41,.28), rgba(230,51,41,0) 60%), radial-gradient(60% 50% at -10% 110%, rgba(230,51,41,.16), rgba(230,51,41,0) 60%)}
+.wrap{max-width:760px;margin:0 auto;padding-inline:18px;padding-block:36px 64px;display:flex;flex-direction:column;gap:22px}
+.brand{display:flex;align-items:center;gap:12px}
+.mark{width:40px;height:40px;border-radius:12px;background:var(--red);display:grid;place-items:center;box-shadow:0 0 30px rgba(230,51,41,.5)}
+.mark svg{width:24px;height:24px}
+.brand b{font-family:var(--display);font-size:14px;letter-spacing:.08em}
+.brand span{display:block;font-size:12px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,5vw,40px);line-height:1.1;margin:0;text-wrap:balance}
+h1 em{font-style:normal;color:var(--red)}
+.intro{color:var(--muted);margin:0;max-width:60ch}
+.rail{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.rail i{height:6px;border-radius:3px;background:var(--line);transition:background .3s}
+.rail i.on{background:var(--red)}
+.steplabel{font-family:var(--display);font-size:12px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;display:flex;justify-content:space-between}
+.card{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:28px 24px;display:flex;flex-direction:column;gap:20px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.card h2{font-family:var(--display);font-size:22px;margin:0}
+.card .lead{margin:-10px 0 0;color:var(--muted);font-size:15px}
+form section{display:flex;flex-direction:column;gap:18px}
+[hidden]{display:none!important}
+.q{display:flex;flex-direction:column;gap:8px}
+.q label,.q legend{font-weight:600;font-size:15px}
+.q .hint{font-size:13px;color:var(--muted);margin-top:-4px}
+.req{color:var(--red2)}
+input[type=text],input[type=email],input[type=url],textarea,select{width:100%;background:var(--field);border:1px solid var(--line);color:var(--fg);font:inherit;border-radius:14px;padding:13px 14px;outline:none;transition:border-color .2s, box-shadow .2s}
+textarea{min-height:96px;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(230,51,41,.22)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+fieldset{border:0;padding:0;margin:0}
+.choices{display:grid;gap:10px}
+.choices.two{grid-template-columns:1fr 1fr}
+.choices.three{grid-template-columns:repeat(3,1fr)}
+.choice{position:relative}
+.choice input{position:absolute;opacity:0;pointer-events:none}
+.choice label{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:var(--field);cursor:pointer;font-weight:600;height:100%}
+.choice label small{font-weight:400;color:var(--muted);font-size:13px}
+.choice input:checked + label{border-color:var(--red);background:linear-gradient(135deg, rgba(230,51,41,.22), rgba(230,51,41,.06))}
+.choice input:focus-visible + label{box-shadow:0 0 0 3px rgba(230,51,41,.35)}
+.nav{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+button{font:inherit;font-weight:700;border-radius:999px;padding:13px 26px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--fg)}
+button.primary{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 10px 30px rgba(230,51,41,.35)}
+button:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+button[disabled]{opacity:.4;cursor:default}
+.err{color:var(--red2);font-size:13px;min-height:18px}
+.review{display:flex;flex-direction:column;gap:14px}
+.rv h3{font-family:var(--display);font-size:13px;letter-spacing:.14em;color:var(--red2);margin:6px 0 4px;text-transform:uppercase}
+.rv dl{margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.rv dt{font-size:13px;color:var(--muted)}
+.rv dd{margin:0 0 6px;white-space:pre-wrap;overflow-wrap:anywhere}
+.note{font-size:13px;color:var(--muted)}
+.toast{font-size:14px;color:#fff;background:#1F7A3A;border-radius:12px;padding:10px 14px}
+textarea#out{min-height:160px;font-size:13px}
+@media (max-width:560px){.row2,.choices.two,.choices.three{grid-template-columns:1fr}.card{padding:22px 16px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="brand">
+    <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 9-9 9-9-9 9-9z" fill="#fff"/><circle cx="12" cy="12" r="3" fill="#E63329"/></svg></div>
+    <div><b>SPIDERX MEDIA</b><span>Client Onboarding</span></div>
+  </div>
+  <h1>Welcome aboard. <em>Let’s build your system.</em></h1>
+  <p class="intro">We take the next 10–14 days to set up your strategy, team, accounts and warm-up before anything goes live. Your answers here shape all of it. It takes about 10 minutes, and your progress is saved on this device.</p>
+
+  <div>
+    <div class="rail" aria-hidden="true" id="rail"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+  <div class="steplabel"><span id="stepname">Basics</span><span id="stepcount">Step 1 of 7</span></div>
+
+  <form id="f" class="card" novalidate>
+    <!-- 1 -->
+    <section data-step="Basics">
+      <h2>The basics</h2>
+        <div class="row2">
+          <div class="q"><label for="name">Full name <span class="req">*</span></label><input id="name" name="Full name" type="text" required autocomplete="name"></div>
+          <div class="q"><label for="brand">Brand / show name <span class="req">*</span></label><input id="brand" name="Brand / show name" type="text" required></div>
+        </div>
+        <div class="row2">
+          <div class="q"><label for="email">Email <span class="req">*</span></label><input id="email" name="Email" type="email" required autocomplete="email"></div>
+          <div class="q"><label for="wa">WhatsApp</label><input id="wa" name="WhatsApp" type="text" autocomplete="tel"></div>
+        </div>
+        <div class="q"><label for="tz">Time zone</label><input id="tz" name="Time zone" type="text" placeholder="e.g. GMT+4, Dubai"></div>
+        <div class="q"><label for="accounts">Links to all your main accounts</label><div class="hint">YouTube, Instagram, TikTok, X, LinkedIn… one per line.</div><textarea id="accounts" name="Main accounts"></textarea></div>
+    </section>
+
+    <!-- 2 -->
+    <section data-step="Goals" hidden>
+      <h2>Goals &amp; direction</h2>
+      <div class="q"><label for="focus">What should scaling focus on in this period? <span class="req">*</span></label><textarea id="focus" name="Scaling focus this period" required></textarea></div>
+      <div class="q"><label for="deep">What is your deeper goal from this strategy? <span class="req">*</span></label><textarea id="deep" name="Deeper goal" required></textarea></div>
+      <div class="q"><label for="heading">Where is your main content heading in the coming period?</label><textarea id="heading" name="Main content direction"></textarea></div>
+      <div class="q"><label for="success">What does success look like for you after month 1 and month 3?</label><textarea id="success" name="Success after month 1 and 3"></textarea></div>
+    </section>
+
+    <!-- 3 -->
+    <section data-step="Communication" hidden>
+      <h2>Communication</h2>
+      <div class="q"><label for="avail">When are you usually available to reply?</label><input id="avail" name="Availability to reply" type="text" placeholder="e.g. Weekdays, 10am–2pm"></div>
+      <fieldset class="q"><legend>How would you like to work with us?</legend>
+        <div class="choices two">
+          <div class="choice"><input type="radio" id="c-group" name="Communication" value="Group chat"><label for="c-group">Group chat<small>You, your consultant and Moaaz. Daily updates on the strategy, so you always know what we’re doing.</small></label></div>
+          <div class="choice"><input type="radio" id="c-solo" name="Communication" value="One-on-one"><label for="c-solo">One-on-one only<small>We keep it to direct messages with you.</small></label></div>
+        </div>
+      </fieldset>
+      <div class="q"><label for="poc">Who should we contact if you’re busy?</label><input id="poc" name="Point of contact" type="text" placeholder="Name and how to reach them"></div>
+    </section>
+
+    <!-- 4 -->
+    <section data-step="Content" hidden>
+      <h2>Content &amp; production</h2>
+      <div class="q"><label for="raw">Your raw recordings, in the highest quality <span class="req">*</span></label><div class="hint">A Drive or Dropbox link to the original files, not the YouTube upload.</div><input id="raw" name="Raw recordings link" type="url" required placeholder="https://"></div>
+      <fieldset class="q"><legend>Can you film specific content just for the sub-accounts?</legend>
+        <div class="choices three">
+          <div class="choice"><input type="radio" id="film-y" name="Can film for sub-accounts" value="Yes"><label for="film-y">Yes</label></div>
+          <div class="choice"><input type="radio" id="film-s" name="Can film for sub-accounts" value="Sometimes"><label for="film-s">Sometimes</label></div>
+          <div class="choice"><input type="radio" id="film-n" name="Can film for sub-accounts" value="Not for now"><label for="film-n">Not for now</label></div>
+        </div>
+      </fieldset>
+      <div class="row2">
+        <div class="q"><label for="time">Time you can give us per month</label><select id="time" name="Time per month"><option value="">Choose…</option><option>Less than 2 hours</option><option>2–5 hours</option><option>5–10 hours</option><option>10+ hours</option></select></div>
+        <div class="q"><label for="freq">How often do you publish long-form?</label><select id="freq" name="Long-form frequency"><option value="">Choose…</option><option>Several times a week</option><option>Weekly</option><option>Every two weeks</option><option>Monthly or less</option></select></div>
+      </div>
+      <div class="q"><label for="best">Your best-performing episodes or videos</label><textarea id="best" name="Best-performing videos"></textarea></div>
+      <div class="q"><label for="guests">Any guests whose clips we should not publish?</label><textarea id="guests" name="Guests not to publish"></textarea></div>
+    </section>
+
+    <!-- 5 -->
+    <section data-step="Brand" hidden>
+      <h2>Your brand</h2>
+      <div class="q"><label for="assets">Logo, brand colors and fonts</label><div class="hint">A link to a folder or brand guide.</div><input id="assets" name="Brand assets link" type="url" placeholder="https://"></div>
+      <div class="q"><label for="red">Topics, words or opinions we must never post</label><textarea id="red" name="Red lines"></textarea></div>
+      <div class="q"><label for="style">Creators whose style you love, and styles you don’t want</label><textarea id="style" name="Styles loved and avoided"></textarea></div>
+    </section>
+
+    <!-- 6 -->
+    <section data-step="Sales" hidden>
+      <h2>What you sell</h2>
+      <p class="lead">From month 2 we start driving direct sales through every account.</p>
+      <div class="q"><label for="offers">Your products: name, price and link</label><div class="hint">Courses, digital products, community, consulting… one per line.</div><textarea id="offers" name="Products"></textarea></div>
+      <fieldset class="q"><legend>Affiliate links</legend>
+        <div class="choices three">
+          <div class="choice"><input type="radio" id="aff-have" name="Affiliate links" value="I already have them"><label for="aff-have">I already have them</label></div>
+          <div class="choice"><input type="radio" id="aff-make" name="Affiliate links" value="Please create tracked links"><label for="aff-make">Please create tracked links for me</label></div>
+          <div class="choice"><input type="radio" id="aff-later" name="Affiliate links" value="Not yet"><label for="aff-later">Not yet</label></div>
+        </div>
+      </fieldset>
+    </section>
+
+    <!-- 7 -->
+    <section data-step="History" hidden>
+      <h2>Your history</h2>
+      <fieldset class="q"><legend>Have you worked with clippers or clipping campaigns before?</legend>
+        <div class="choices three">
+          <div class="choice"><input type="radio" id="h-run" name="Clipping history" value="Yes, one is running now"><label for="h-run">Yes, one is running now</label></div>
+          <div class="choice"><input type="radio" id="h-past" name="Clipping history" value="Yes, in the past"><label for="h-past">Yes, in the past</label></div>
+          <div class="choice"><input type="radio" id="h-no" name="Clipping history" value="No"><label for="h-no">No, never</label></div>
+        </div>
+      </fieldset>
+      <div class="q"><label for="hist">Anything we should know about it?</label><textarea id="hist" name="Clipping history details"></textarea></div>
+    </section>
+
+    <!-- review -->
+    <section data-step="Review" hidden class="review">
+      <h2>Review your answers</h2>
+      <div id="rv" class="rv"></div>
+      <p class="note">Everything look right? Hit Submit and it goes straight to our team.</p>
+    </section>
+
+    <!-- done -->
+    <section data-step="Done" hidden>
+      <h2>You’re all set.</h2>
+      <p class="lead" style="margin:0">We have everything we need to start building your system. We’ll be in touch within 24 hours.</p>
+    </section>
+
+    <div class="err" id="err" role="alert"></div>
+    <div class="nav">
+      <button type="button" id="back">Back</button>
+      <button type="button" class="primary" id="next">Next</button>
+    </div>
+  </form>
+</div>
+
+<script>
+(function(){
+  /* ====== SETTINGS: paste your Google Apps Script Web App URL between the quotes ====== */
+  const SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
+  /* ===================================================================================== */
+  const form=document.getElementById('f');
+  const all=[...form.querySelectorAll('section[data-step]')]; const doneSec=all.pop(); const steps=all;
+  const rail=[...document.querySelectorAll('#rail i')];
+  const back=document.getElementById('back'), next=document.getElementById('next'), err=document.getElementById('err');
+  const KEY='spx-onboarding-v1';
+  let i=0;
+
+  function load(){ try{ const d=JSON.parse(localStorage.getItem(KEY)||'{}');
+    for(const el of form.elements){ if(!el.name||el.readOnly) continue;
+      if(el.type==='radio'){ el.checked = d[el.name]===el.value; } else if(d[el.name]!==undefined){ el.value=d[el.name]; } } }catch(e){} }
+  function save(){ try{ const d={}; for(const el of form.elements){ if(!el.name||el.readOnly) continue;
+      if(el.type==='radio'){ if(el.checked) d[el.name]=el.value; } else d[el.name]=el.value; }
+      localStorage.setItem(KEY,JSON.stringify(d)); }catch(e){} }
+
+  function show(n){
+    i=n; steps.forEach((s,k)=>s.hidden=k!==n);
+    const last=n===steps.length-1;
+    rail.forEach((r,k)=>r.classList.toggle('on',k<=Math.min(n,6)));
+    document.getElementById('stepname').textContent=steps[n].dataset.step;
+    document.getElementById('stepcount').textContent= last?'All done':'Step '+(n+1)+' of 7';
+    back.disabled=n===0; next.textContent= last?'Submit': (n===steps.length-2?'Review':'Next');
+    err.textContent=''; if(last) buildReview();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function valid(sec){
+    for(const el of sec.querySelectorAll('[required]')){
+      if(!el.value.trim()){ err.textContent='Please fill in: '+el.name+'.'; el.focus(); return false; }
+      if(el.type==='email' && !/^\S+@\S+\.\S+$/.test(el.value)){ err.textContent='That email doesn’t look right.'; el.focus(); return false; }
+      if(el.type==='url' && !/^https?:\/\//i.test(el.value)){ err.textContent='Links should start with https://'; el.focus(); return false; }
+    } return true;
+  }
+  function buildReview(){
+    const rv=document.getElementById('rv'); rv.textContent=''; let txt='SPIDERX MEDIA · CLIENT ONBOARDING\n';
+    steps.slice(0,-1).forEach(sec=>{
+      const h=document.createElement('h3'); h.textContent=sec.dataset.step; rv.appendChild(h); txt+='\n— '+sec.dataset.step.toUpperCase()+' —\n';
+      const dl=document.createElement('dl'); const seen=new Set();
+      sec.querySelectorAll('input,textarea,select').forEach(el=>{
+        if(!el.name||seen.has(el.name)) return; seen.add(el.name);
+        let v; if(el.type==='radio'){ const c=sec.querySelector('input[name="'+CSS.escape(el.name)+'"]:checked'); v=c?c.value:''; } else v=el.value.trim();
+        const dt=document.createElement('dt'); dt.textContent=el.name; const dd=document.createElement('dd'); dd.textContent=v||'—';
+        dl.append(dt,dd); txt+=el.name+': '+(v||'—')+'\n';
+      }); rv.appendChild(dl);
+    });
+    
+  }
+  function collect(){ const d={}; for(const el of form.elements){ if(!el.name) continue;
+      if(el.type==='radio'){ if(el.checked) d[el.name]=el.value; else if(!(el.name in d)) d[el.name]=''; } else d[el.name]=el.value.trim(); } return d; }
+  next.addEventListener('click',async()=>{
+    if(i===steps.length-1){
+      if(!SCRIPT_URL || SCRIPT_URL.indexOf('script.google.com')===-1){ err.textContent='This form is not connected yet: paste your Apps Script URL in SCRIPT_URL.'; return; }
+      next.disabled=true; back.disabled=true; next.textContent='Sending…'; err.textContent='';
+      try{
+        await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams(collect())});
+        try{ localStorage.removeItem(KEY); }catch(e){}
+        steps.forEach(s=>s.hidden=true); doneSec.hidden=false; back.hidden=true; next.hidden=true;
+        rail.forEach(r=>r.classList.add('on')); document.getElementById('stepname').textContent='Done'; document.getElementById('stepcount').textContent='Submitted';
+      }catch(e){ err.textContent='Couldn’t send. Check your connection and try again.'; next.disabled=false; back.disabled=false; next.textContent='Submit'; }
+      return;
+    }
+    if(!valid(steps[i])) return; save(); show(i+1);
+  });
+  back.addEventListener('click',()=>{ if(i>0){ save(); show(i-1);} });
+  form.addEventListener('input',save); form.addEventListener('change',save);
+  form.addEventListener('submit',e=>e.preventDefault());
+  load(); show(0);
+})();
+</script>
+
+</body>
+</html>
